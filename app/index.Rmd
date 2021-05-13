@@ -87,10 +87,10 @@ click_to_api <- eventReactive(input$map1_click, {
   api_aoi(pt= click)
 
 })
- # TEST API
-output$clickText <- renderPrint({
-  summary(click_to_api())
-})
+#  # TEST API
+# output$clickText <- renderPrint({
+#   summary(click_to_api())
+# })
 
 raster_data <- eventReactive(input$submitButton, {
   bb <- get_county(click_pt())
@@ -186,8 +186,8 @@ leafletOutput("map2")
   observeEvent(input$map1_click, {
    if(!is.null(input$map1_click)) {
       pt <- click_pt()
-      bb <- get_county(pt)
-      
+      # bb <- get_county(pt)
+      bb <- click_to_api()
       
       # pop <- get_population(pt)
       bounds <- st_bbox(bb) %>%
@@ -305,8 +305,9 @@ observeEvent(input$submitButton, {
   } else if(!is.null(input$map1_click)) {
       
       pt <- click_pt()
-      bb <- get_county(pt)
-
+      # bb <- get_county(pt)
+      bb <- click_to_api()
+      
       # Map 2 fly to bounds
       bounds <- st_bbox(bb) %>%
           st_as_sfc() %>%

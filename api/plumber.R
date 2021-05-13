@@ -25,7 +25,7 @@ function(pt) {
 #* @param end: [chr]
 #* @post /predict
 function(pt, start, end) {
-  agg <- aggregate_maca(grab_aoi(pt),
+  agg <- aggregate_maca(pt,
                         start_date = as.character(start),
                         end_date = as.character(end))
   cbi <- augment(model, agg) %>%
