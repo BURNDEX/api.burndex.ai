@@ -6,11 +6,16 @@ fire_path <- sf::read_sf("https://opendata.arcgis.com/datasets/f72ebe741e3b4f0db
 #' then returns the R6 model after it has been loaded into memory.
 #' @return An `R6` object containing the model ensemble internally.
 get_mars_model <- function() {
+    object_url <- paste0(
+        "https://storage.googleapis.com/burndex-models/",
+        "mars_ensemble.qs"
+    )
+
     file_path <- file.path("data", "mars_ensemble.qs")
 
     if (!file.exists(file_path)) {
         download.file(
-            url      = 
+            url      = object_url,
             destfile = file_path,
             mode     = "wb"
         )
@@ -242,7 +247,7 @@ aggregate_maca <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
     tidy_clim
 }
 
-tidy_to_raster <- function(data, x, y, z) {
+tidy_to_raster <- function(data, x, y, z, ..., res = c(NA, NA)) {
     xyz <- data %>%
            dplyr::select({{ x }}, {{ y }}, {{ z }}) %>%
            dplyr::rename(
@@ -253,6 +258,7 @@ tidy_to_raster <- function(data, x, y, z) {
 
     raster::rasterFromXYZ(
         xyz = xyz,
+        res = res,
         crs = sf::st_crs(4326)$proj4string
     )
 }

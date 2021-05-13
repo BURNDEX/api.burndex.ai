@@ -24,7 +24,8 @@ RUN install2.r -e -s \
     timetk \
     earth \
     R6 \
-    qs
+    qs \
+    jsonlite
 
 # Install plumber and setup image to use
 RUN Rscript -e "remotes::install_github('rstudio/plumber@master')"
