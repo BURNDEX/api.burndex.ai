@@ -1,5 +1,8 @@
 library(plumber)
-library(parsnip)
+library(tidymodels)
+library(timetk)
+library(earth)
+library(R6)
 
 
 pr("app/plumber.R") %>%
@@ -7,24 +10,20 @@ pr("app/plumber.R") %>%
     spec$info <- list(
       title = "Burndex API",
       description = paste(
-        "Generate predictions based on",
-        "climate variables"
+        "Generate burning index predictions",
+        "based on climate variables"
       ),
       contact = list(
-        name = "Justin Singh-Mohudpur",
-        email = "justinsingh-mohudpur@ucsb.edu"
+        name = "BURNDEX",
+        email = "support@burndex.ai"
       ),
       license = list(
         name = "MIT",
         url = "https://opensource.org/licenses/MIT"
       ),
-      version = "0.0.2"
+      version = "0.0.1"
     )
 
     spec
   }) %>%
   pr_run(host = "0.0.0.0", port = 8000)
-
-
-
-
