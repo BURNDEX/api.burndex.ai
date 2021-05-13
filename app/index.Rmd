@@ -1,0 +1,380 @@
+---
+title: "Climate predictions"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    css: www/custom.css
+    navbar:
+      - { icon: "fa-question-circle", href: "https://water.noaa.gov/about/nwm", align: right }
+    orientation: rows
+    vertical_layout: fill
+---
+
+```{r setup, include = FALSE}
+# Shiny 
+library(shiny)
+library(flexdashboard)
+library(bslib)
+library(htmltools)
+
+
+# Spatial & Climate data libraries
+library(leaflet)
+library(sf)
+library(raster)
+library(USAboundaries)
+library(USAboundariesData)
+library(dataRetrieval)
+library(climateR)
+# library(elevatr)
+
+# Data processing
+library(dplyr)
+library(dygraphs)
+library(gt)
+library(mmtable2)
+library(stringr)
+library(lubridate)
+library(janitor)
+library(formattable)
+library(mmtable2)
+
+# Modeling libraries
+library(tidymodels)
+library(kknn)
+library(timetk)
+
+
+source('utils.R')
+source("api_utils.R")
+```
+
+```{r context="server"}
+
+# ML model
+kknn_model <- readRDS("kknn_model.rds")
+
+
+# US census API key
+# tidycensus::census_api_key("e35e9a066fde271fb3779cceb453bebc82fa3498",overwrite=TRUE, install = TRUE)
+# Sys.getenv("CENSUS_API_KEY")
+# readRenviron("~/.Renviron")
+
+# path <- "us_fire_perim.gdb"
+
+#Initialize Maps 
+output$map1     <- renderLeaflet({ basemap() })
+output$map2     <- renderLeaflet({ second_map() })
+# output$map3 <- renderLeaflet({ third_map() })
+# output$map3 <- renderLeaflet({ pop_map() })
+# comid <<- reactiveValues(comid = NULL)
+
+click_pt <- eventReactive(input$map1_click, {
+  click <- input$map1_click %>%
+      data.frame() %>%
+      dplyr::select(lat,lng)
+    # print(click)
+    pt <- sf::st_as_sf(click,
+                        coords = c("lng", "lat"),
+                        crs = 4326)
+})
+
+ # TEST API
+click_to_api <- eventReactive(input$map1_click, {
+  click <- input$map1_click %>%
+      data.frame() %>%
+      dplyr::select(lat,lng)
+  api_aoi(pt= click)
+
+})
+ # TEST API
+output$clickText <- renderPrint({
+  summary(click_to_api())
+})
+
+raster_data <- eventReactive(input$submitButton, {
+  bb <- get_county(click_pt())
+  print("get_raster")
+  r <- get_raster(aoi = bb, start = dateText(), end = dateText(), model = kknn_model)
+  
+# centroid <- eventReactive(input$map1_click, {
+#   click <- input$map1_click %>% 
+#       data.frame() %>% 
+#       dplyr::select(lat,lng)
+#     print(click)
+#     pt <- sf::st_as_sf(click, 
+#                         coords = c("lng", "lat"), 
+#                         crs = 4326) 
+#     
+#     
+  
+})
+
+```
+
+
+
+Burndex {data-icon="fa-tint"}
+=====================================
+
+Inputs {.sidebar}
+-------------------------------------
+
+### Model Filters
+```{r}
+dateInput("dateSelect", label = "Date Input",
+          value = "2000-01-01",
+               # value = (Sys.Date() -1),
+               min = "1980-01-01",
+          max = "2100-01-01",
+               # max = (Sys.Date() -1),
+               format = "yyyy mm dd",
+               weekstart = 1)
+
+ # TEST API
+verbatimTextOutput("clickText")
+```
+
+
+```{r context = "server"}
+summaryData <- eventReactive(input$submitButton, {
+      make_table(click_pt())
+    })
+
+output$summaryTable <- render_gt({
+          summaryData()
+      })
+```
+
+```{r context = "server"}
+# Testing reactive date inputs
+dateText <- eventReactive(input$submitButton, {
+    format.Date(input$dateSelect)
+  })
+# 
+# output$dateInputText <- renderText({
+#    dateText()
+#   })
+```
+
+### **Submit**
+```{r}
+shiny::actionButton("submitButton", label = "Enter", icon("search"))
+```
+
+### Table
+```{r}
+gt_output("summaryTable")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Map1
+```{r}
+leafletOutput("map1")
+```
+
+### map 2
+```{r}
+leafletOutput("map2")
+```
+
+
+```{r context = "server"}
+#Clicking on map 1 outputs Value boxes on both pages + catchment polygons + Dat table + info panel
+  observeEvent(input$map1_click, {
+   if(!is.null(input$map1_click)) {
+      pt <- click_pt()
+      bb <- get_county(pt)
+      
+      
+      # pop <- get_population(pt)
+      bounds <- st_bbox(bb) %>%
+            st_as_sfc() %>%
+            st_buffer(0.15) %>%
+            st_bbox() %>%
+            as.vector()
+      
+      # fires <<- get_fires(bb, path)
+    
+      leafletProxy("map1") %>%
+          clearMarkers() %>%
+          clearShapes() %>%
+          addCircleMarkers(data = pt) %>%
+          addPolygons(data = bb,
+                     fillColor = 'transparent',
+                     color = "black",
+                     weight = .5) %>%
+          # addPolygons(data = fires,
+          #             label = ~fire_name,
+          #             fillColor = "red",
+          #             fillOpacity = 0.1,
+          #             color = "darkred",
+          #             weight = .5
+          #             ) %>%
+          flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+      
+      #   pop <- st_transform(pop, 4326)
+      #   pal <- colorQuantile(palette = "viridis", domain = pop$pop_density, n = 10)
+      # 
+      # leafletProxy("map1") %>%
+      #   clearMarkers() %>%
+      #   clearShapes() %>%
+      #   addMarkers(data = pt) %>%
+      #   addPolygons(data = pop, stroke = TRUE,
+      #           fillColor = ~pal(pop_density),
+      #           weight = 0.3,
+      #           smoothFactor = 0,
+      #           fillOpacity = 0.6) %>%
+      #   addLegend("bottomright",
+      #         pal = pal,
+      #         values = ~ pop_density,
+      #         title = "Population percentiles",
+      #         opacity = 1) %>%
+      # flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+
+      # pred <- pointRaster()
+    
+      
+      leafletProxy("map2") %>%
+        clearMarkers() %>%
+        clearShapes() %>%
+        clearImages() %>%
+        # addRasterImage(x = pred) %>%
+         addCircleMarkers(data = pt,
+                          radius = 0) %>%
+         addPolygons(data = bb,
+                     fillColor = 'red',
+                     color = "black",
+                     weight = 2) %>% 
+        flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+      
+      # FIP <<- input$map1_marker_click$id
+      # leafletProxy('map3') %>%
+      #   zoom_to_county(counties, FIP)
+     }
+
+})
+```
+
+```{r, context = "server"}
+# fireShapes <- eventReactive(input$map1_click, {
+#     bb <- get_county(click_pt())
+#     
+#     bounds <- st_bbox(bb) %>%
+#           st_as_sfc() %>%
+#           st_buffer(0.15) %>%
+#           st_bbox() %>%
+#           as.vector()
+#     
+#     fires <<- get_fires(bb, path)
+#     
+#      leafletProxy("map1") %>%
+#           clearMarkers() %>%
+#           clearShapes() %>%
+#           clearImages() %>%
+#           addPolygons(data = fires, label = ~fire_name) %>%
+#           flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+#     })
+# 
+# output$fireTable <- renderFormattable({
+#           fireShapes()
+#       })
+```
+
+```{r context = "server"}
+# Observer to respond to zoom / pan of map1 and apply to map2
+observe({ 
+    coords <- input$map1_center
+    zoom <- input$map1_zoom
+    print(coords)
+    print(zoom)
+    if (!is.null(coords)) {
+      leafletProxy("map2") %>%
+        setView(lat = coords$lat, lng = coords$lng, zoom = zoom)
+    }
+})
+``` 
+
+```{r context = "server"}
+# Observes when submit button is pressed & AOI selected on Map
+observeEvent(input$submitButton, {
+  if(is.null(input$map1_click)){
+    NULL
+  } else if(!is.null(input$map1_click)) {
+      
+      pt <- click_pt()
+      bb <- get_county(pt)
+
+      # Map 2 fly to bounds
+      bounds <- st_bbox(bb) %>%
+          st_as_sfc() %>%
+          st_buffer(0.15) %>%
+          st_bbox() %>%
+          as.vector()
+
+      # rast <- climateR::getGridMET(AOI = bb, var, startDate = dateText())
+      print("raster1")
+     
+      r <- get_prediction(aoi = bb, start = dateText(), end = dateText(), model = kknn_model) 
+      r <- mask(r, bb)
+      print(names(r))
+     #  fires <<- get_fires(bb, path)
+     #  
+     #  # terr <- get_terrain(bb)
+     # leafletProxy("map1") %>%
+     #      clearMarkers() %>%
+     #      clearShapes() %>%
+     #      clearImages() %>%
+     #    addPolygons(data = fires, label = ~fire_name) %>%
+     #      # addRasterImage(x = terr$slope) %>%
+     #    flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+      pal = colorNumeric("RdYlGn", reverse= TRUE, domain = values(r))
+      
+      leafletProxy("map2") %>%
+          clearMarkers() %>%
+          clearShapes() %>%
+          clearImages() %>%
+          # addPolygons(data = fires) %>%
+          addRasterImage(x = r, opacity = 0.7) %>% 
+        # addLegend(position = "topright",
+        #     colors = c("green", "blue", "yellow", "orange", "red"),
+        #     labels = c("Low", "Moderate", "High", "Very high", "Extreme")) %>% 
+        flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4])
+  }
+})
+```
+
+Row
+------------------------------------------
+### Fire stats
+```{r}
+# formattableOutput("fireTable")
+```
+
+```{r, context = "server"}
+# fireData <- eventReactive(input$map1_click, {
+#       bb <- get_county(click_pt())
+#       fire_table(get_fires(bb, path))
+#     })
+# 
+# output$fireTable <- renderFormattable({
+#           fireData()
+#       })
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
