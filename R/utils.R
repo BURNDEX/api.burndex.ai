@@ -29,6 +29,10 @@ get_mars_model <- function() {
     qs::qread(file_path, nthreads = as.integer(parallel::detectCores()[1] - 1))
 }
 
+get_fire_data <- function() {
+    "/app/burndex_api/data/fire_perim.gpkg"
+}
+
 #' @title Convert latlon coordinates to an `sf` object
 #' @param lat Latitude
 #' @param lon Longitude
