@@ -11,11 +11,18 @@ get_mars_model <- function() {
 
     file_path <- file.path("/app/burndex_api/data", "mars_ensemble.qs")
 
+    if (!dir.exists(dirname(file_path))) {
+        dir.create(
+            dirname(file_path),
+            recursive = TRUE
+        )
+    }
+
     if (!file.exists(file_path)) {
         download.file(
             url      = object_url,
             destfile = file_path,
-            mode     = "wb"
+            mode     = "w"
         )
     }
 
