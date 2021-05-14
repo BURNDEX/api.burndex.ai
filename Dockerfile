@@ -29,6 +29,12 @@ RUN install2.r -e -s \
     qs \
     jsonlite
 
+RUN installGithub.r \
+    ropensci/USAboundaries \
+    ropensci/USAboundariesData \
+    mikejohnson51/AOI \
+    mikejohnson51/climateR
+
 # Install plumber and setup image to use
 RUN Rscript -e "remotes::install_github('rstudio/plumber@master')"
 EXPOSE 8000
