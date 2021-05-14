@@ -16,6 +16,7 @@ RUN apt-get update -qq && \
 
 # Install Geospatial Dependencies
 COPY scripts/install_geospatial_modified.sh /rocker_scripts
+RUN chmod +x /rocker_scripts/install_geospatial_modified.sh
 RUN /rocker_scripts/install_geospatial_modified.sh
 
 # Install additional R packages

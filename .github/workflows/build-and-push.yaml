@@ -6,7 +6,8 @@ on:
       - main
 
 jobs:
-  build-and-push-to-gcr:
+  deploy-api:
+    name: Deploy BURNDEX API Service
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,3 +20,7 @@ jobs:
           registry: us.gcr.io
           project_id: burndex
           image_name: bx-api
+      
+      - name: Deploy Container to App Engine
+        run: |
+          gcloud app deploy --image-url=us.gcr.io/burndex/bx-api
