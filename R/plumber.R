@@ -1,5 +1,5 @@
-source("R/utils.R", local = TRUE)
-source("R/globals.R", local = TRUE)
+source("/app/burndex_api/R/utils.R", local = TRUE)
+source("/app/burndex_api/R/globals.R", local = TRUE)
 
 #* Predict burning index from parameters for a point
 #* @param lat:[string] Latitude of point

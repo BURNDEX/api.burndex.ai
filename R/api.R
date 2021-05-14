@@ -7,7 +7,7 @@ library(AOI)
 library(climateR)
 
 
-pr("app/plumber.R") %>%
+pr("/app/burndex_api/plumber.R") %>%
   pr_set_api_spec(function(spec) {
     spec$info <- list(
       title = "Burndex API",
