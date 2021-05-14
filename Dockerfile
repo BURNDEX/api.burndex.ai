@@ -36,5 +36,8 @@ RUN installGithub.r \
     mikejohnson51/climateR \
     rstudio/plumber
 
+RUN mkdir -p /app/burndex_api/data/
+RUN wget -O /app/burndex_api/data/mars_ensemble.qs https://storage.googleapis.com/burndex-models/mars_ensemble.qs
+
 COPY . /app/burndex_api
 CMD ["Rscript", "/app/burndex_api/R/api.R"]
