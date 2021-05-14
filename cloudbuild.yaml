@@ -26,5 +26,3 @@ steps:
 timeout: 1800s
 images:
   - gcr.io/burndex/bx-api
-substitutions:
-  PORT: "8080"
