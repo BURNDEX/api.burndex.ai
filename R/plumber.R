@@ -151,7 +151,7 @@ function(pt) {
         # make_point(lat, lon) %>%
         pt %>%
             AOI::aoi_buffer(10, km = TRUE) %>%
-            get_fires(fire_path) %>%
+            get_fires(fire_perim) %>%
             geojsonsf::sf_geojson()
     })
 }
