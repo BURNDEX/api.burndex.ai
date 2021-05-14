@@ -15,19 +15,21 @@ source("/app/burndex_api/R/globals.R", local = TRUE)
 #* @post /predict-point
 function(lat, lon, date, prcp, rhmax, rhmin, shum, srad, tmin, tmax) {
     given_data <- tibble::tibble(
-        lat   = !!as.double(lat),
-        lon   = !!as.double(lon),
-        date  = !!as.Date(date),
-        prcp  = !!as.double(prcp),
-        rhmax = !!as.double(rhmax),
-        rhmin = !!as.double(rhmin),
-        shum  = !!as.double(shum),
-        srad  = !!as.double(srad),
-        tmin  = !!as.double(tmin),
-        tmax  = !!as.double(tmax)
+        lat   = as.double(lat),
+        lon   = as.double(lon),
+        date  = as.Date(date),
+        prcp  = as.double(prcp),
+        rhmax = as.double(rhmax),
+        rhmin = as.double(rhmin),
+        shum  = as.double(shum),
+        srad  = as.double(srad),
+        tmin  = as.double(tmin),
+        tmax  = as.double(tmax)
     )
 
-    bagged_mars$predict(new_data = given_data)[[1]]
+    promises::future_promise({
+        bagged_mars$predict(new_data = given_data)[[1]]
+    })
 }
 
 #* Predict burning index by a point of interest and date
@@ -42,17 +44,25 @@ function(lat, lon, date) {
 
     assertthat::assert_that(date < "2100-01-01")
 
-    poi <- sf::st_point(x = c(lon, lat), dim = "XY") %>%
-           sf::st_set_crs(4326) %>%
-           sf::st_as_sf()
+    poi <- make_point(lat, lon)
 
-    if (date > Sys.Date() - 1) {
-        given_data <- aggregate_maca(poi, start_date = date, end_date = date)
-    } else {
-        given_data <- aggregate_gridmet(poi, start_date = date, end_date = date)
-    }
+    promises::future_promise({
+        if (date > Sys.Date() - 1) {
+            given_data <- aggregate_maca(
+                poi,
+                start_date = date,
+                end_date = date
+            )
+        } else {
+            given_data <- aggregate_gridmet(
+                poi,
+                start_date = date,
+                end_date = date
+            )
+        }
 
-    bagged_mars$predict(new_data = given_data)[[1]]
+        bagged_mars$predict(new_data = given_data)[[1]]
+    })
 }
 
 #* Predict burning index by an area of interest and date
@@ -75,13 +85,23 @@ function(xmin, xmax, ymin, ymax, date) {
            sf::st_as_sf(coords = c(1, 2)) %>%
            sf::st_bbox()
 
-    if (date > Sys.Date() - 1) {
-        given_data <- aggregate_maca(aoi, start_date = date, end_date = date)
-    } else {
-        given_data <- aggregate_gridmet(aoi, start_date = date, end_date = date)
-    }
+    promises::future_promise({
+        if (date > Sys.Date() - 1) {
+            given_data <- aggregate_maca(
+                aoi,
+                start_date = date,
+                end_date = date
+            )
+        } else {
+            given_data <- aggregate_gridmet(
+                aoi,
+                start_date = date,
+                end_date = date
+            )
+        }
 
-    bagged_mars$predict(new_data = given_data)[[1]]
+        bagged_mars$predict(new_data = given_data)[[1]]
+    })
 }
 
 #* Predict burning index by county and date
@@ -96,15 +116,25 @@ function(county, state, date) {
 
     assertthat::assert_that(date < "2100-01-01")
 
-    aoi <- AOI::aoi_get(county = !!county, state = !!state)
+    aoi <- AOI::aoi_get(county = county, state = state)
 
-    if (date > Sys.Date() - 1) {
-        given_data <- aggregate_maca(aoi, start_date = date, end_date = date)
-    } else {
-        given_data <- aggregate_gridmet(aoi, start_date = date, end_date = date)
-    }
+    promises::future_promise({
+        if (date > Sys.Date() - 1) {
+            given_data <- aggregate_maca(
+                aoi,
+                start_date = date,
+                end_date = date
+            )
+        } else {
+            given_data <- aggregate_gridmet(
+                aoi,
+                start_date = date,
+                end_date = date
+            )
+        }
 
-    bagged_mars$predict(new_data = given_data)[[1]]
+        bagged_mars$predict(new_data = given_data)[[1]]
+    })
 }
 
 #* @param pt: [object]
@@ -126,27 +156,18 @@ function(pt) {
   aoi
 }
 
-#* @param pt: [object]
-#* @param start: [chr]
-#* @param end: [chr]
-#* @post /predict
-function(pt, start, end) {
-  agg <- aggregate_maca(pt,
-                        start_date = as.character(start),
-                        end_date = as.character(end))
-  cbi <- augment(model, agg) %>%
-    jsonlite::toJSON()
-  cbi
-}
-
 #* Get fire perimeters near a POI
-#* @param lat:[string] Latitude of point
-#* @param lon:[string] Longitude of point
+#* @param lat:string Latitude of point
+#* @param lon:string Longitude of point
 #* @post /fires
 function(lat, lon) {
-    sf::st_point(x = c(lon, lat)) %>%
-        sf::st_set_crs(4326) %>%
-        AOI::aoi_buffer(10, km = TRUE) %>%
-        get_fires(fire_path) %>%
-        geojsonsf::sf_geojson()
+    lat <- as.double(lat)
+    lon <- as.double(lon)
+
+    promises::future_promise({
+        make_point(lat, lon) %>%
+            AOI::aoi_buffer(10, km = TRUE) %>%
+            get_fires(fire_path) %>%
+            geojsonsf::sf_geojson()
+    })
 }

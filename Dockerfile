@@ -27,7 +27,9 @@ RUN install2.r -e -s \
     R6 \
     qs \
     jsonlite \
-    geojsonsf
+    geojsonsf \
+    promises \
+    future
 
 RUN installGithub.r \
     ropensci/USAboundaries \

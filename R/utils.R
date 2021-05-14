@@ -29,6 +29,18 @@ get_mars_model <- function() {
     qs::qread(file_path, nthreads = as.integer(parallel::detectCores()[1] - 1))
 }
 
+#' @title Convert latlon coordinates to an `sf` object
+#' @param lat Latitude
+#' @param lon Longitude
+#' @return An `sf` object
+make_point <- function(lat, lon) {
+    sf::st_as_sf(
+        tibble::tibble(lat = lat, lon = lon),
+        coords = c("lon", "lat"),
+        crs = sf::st_crs(4326)
+    )
+}
+
 #' @title Calculate Chandler Burning Index
 #' @param rh Relative Humidity
 #' @param t Air Temperature
