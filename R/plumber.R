@@ -2,16 +2,16 @@ source("/app/burndex_api/R/utils.R", local = TRUE)
 source("/app/burndex_api/R/globals.R", local = TRUE)
 
 #* Predict burning index from parameters for a point
-#* @param lat:[string] Latitude of point
-#* @param lon:[string] Longitude of point
-#* @param date:[string] Date (YYYY-MM-DD)
-#* @param prcp:[number] Precipitation Accumulation
-#* @param rhmax:[number] Maximum Relative Humidity
-#* @param rhmin:[number] Minimum Relative Humidity
-#* @param shum:[number] Specific Humidity
-#* @param srad:[number] Downward Surface Shortwave Radiation
-#* @param tmax:[number] Maximum Air Temperature
-#* @param tmin:[number] Minimum Air Temperature
+#* @param lat:string Latitude of point
+#* @param lon:string Longitude of point
+#* @param date:string Date (YYYY-MM-DD)
+#* @param prcp:number Precipitation Accumulation
+#* @param rhmax:number Maximum Relative Humidity
+#* @param rhmin:number Minimum Relative Humidity
+#* @param shum:number Specific Humidity
+#* @param srad:number Downward Surface Shortwave Radiation
+#* @param tmax:number Maximum Air Temperature
+#* @param tmin:number Minimum Air Temperature
 #* @post /predict-point
 function(lat, lon, date, prcp, rhmax, rhmin, shum, srad, tmin, tmax) {
     given_data <- tibble::tibble(
@@ -31,9 +31,9 @@ function(lat, lon, date, prcp, rhmax, rhmin, shum, srad, tmin, tmax) {
 }
 
 #* Predict burning index by a point of interest and date
-#* @param lat:[string] Latitude of point
-#* @param lon:[string] Longitude of point
-#* @param date:[string] Date (YYYY-MM-DD)
+#* @param lat:string Latitude of point
+#* @param lon:string Longitude of point
+#* @param date:string Date (YYYY-MM-DD)
 #* @post /predict-date
 function(lat, lon, date) {
     lat  <- as.double(lat)
@@ -56,11 +56,11 @@ function(lat, lon, date) {
 }
 
 #* Predict burning index by an area of interest and date
-#* @param xmin:[string] Minimum Longitude
-#* @param xmax:[string] Maximum Longitude
-#* @param ymin:[string] Minimum Latitude
-#* @param ymax:[string] Maximum Latitude
-#* @param date:[string] Date (YYYY-MM-DD)
+#* @param xmin:string Minimum Longitude
+#* @param xmax:string Maximum Longitude
+#* @param ymin:string Minimum Latitude
+#* @param ymax:string Maximum Latitude
+#* @param date:string Date (YYYY-MM-DD)
 function(xmin, xmax, ymin, ymax, date) {
     date <- as.Date(date)
     xmin <- as.double(xmin)
@@ -85,9 +85,9 @@ function(xmin, xmax, ymin, ymax, date) {
 }
 
 #* Predict burning index by county and date
-#* @param county:[string] US County Name
-#* @param state:[string] US State Name
-#* @param date:[string] Date (YYYY-MM-DD)
+#* @param county:string US County Name
+#* @param state:string US State Name
+#* @param date:string Date (YYYY-MM-DD)
 #* @post /predict-county
 function(county, state, date) {
     county <- as.character(county)
