@@ -1,11 +1,4 @@
 library(plumber)
-library(tidymodels)
-library(timetk)
-library(earth)
-library(R6)
-library(AOI)
-library(climateR)
-
 
 pr("/app/burndex_api/R/plumber.R") %>%
   pr_set_api_spec(function(spec) {

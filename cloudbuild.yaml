@@ -1,7 +1,7 @@
 steps:
   # build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/burndex/bx-api:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/burndex/bx-api', '.']
     id: Build
     # push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'

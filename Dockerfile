@@ -37,4 +37,4 @@ RUN installGithub.r \
     rstudio/plumber
 
 COPY . /app/burndex_api
-CMD ["/app/burndex_api/R/api.R"]
+CMD ["Rscript", "/app/burndex_api/R/api.R"]

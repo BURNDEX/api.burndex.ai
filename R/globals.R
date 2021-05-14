@@ -1,3 +1,10 @@
+library(tidymodels)
+library(timetk)
+library(earth)
+library(R6)
+library(AOI)
+library(climateR)
+
 bagged_mars <- get_mars_model()
 
 fire_path <- paste0("https://opendata.arcgis.com/datasets/",
