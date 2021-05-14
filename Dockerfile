@@ -1,4 +1,4 @@
-FROM gcr.io/burndex/bx-container:latest
+FROM gcr.io/burndex/bx-base:latest
 
 RUN installGithub.r \
     rstudio/plumber
