@@ -5,7 +5,8 @@ LABEL maintainer="justin@justinsingh.me"
 RUN /rocker_scripts/install_tidyverse.sh
 
 # Install Additional Dependencies
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
     git-core \
     libssl-dev \
     libcurl4-gnutls-dev \
