@@ -9,5 +9,5 @@ library(foreach)
 
 bagged_mars <- get_mars_model()
 fire_perim  <- get_fire_data("perim")
-fire_ts     <- readRDS(get_fire_data("ts"))
+fire_ts     <- get_fire_data("ts")
 #> opendata.arcgis.com/datasets/5da472c6d27b4b67970acc7b5044c862_0.geojson

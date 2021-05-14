@@ -29,6 +29,10 @@ get_mars_model <- function() {
     qs::qread(file_path, nthreads = as.integer(parallel::detectCores()[1] - 1))
 }
 
+make_prediction <- function(r6_model, new_data) {
+    r6_model$predict(new_data = new_data)[[1]]
+}
+
 get_fire_data <- function(type = c("perim", "ts")) {
     type <- match.arg(type)
 

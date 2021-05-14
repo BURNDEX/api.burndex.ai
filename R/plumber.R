@@ -28,7 +28,7 @@ function(lat, lon, date, prcp, rhmax, rhmin, shum, srad, tmin, tmax) {
     )
 
     promises::future_promise({
-        bagged_mars$predict(new_data = given_data)[[1]]
+        make_prediction(bagged_mars, new_data = given_data)
     })
 }
 
@@ -61,7 +61,7 @@ function(lat, lon, date) {
             )
         }
 
-        bagged_mars$predict(new_data = given_data)[[1]]
+        make_prediction(bagged_mars, new_data = given_data)
     })
 }
 
@@ -100,7 +100,7 @@ function(xmin, xmax, ymin, ymax, date) {
             )
         }
 
-        bagged_mars$predict(new_data = given_data)[[1]]
+        make_prediction(bagged_mars, new_data = given_data)
     })
 }
 
@@ -133,7 +133,7 @@ function(county, state, date) {
             )
         }
 
-        bagged_mars$predict(new_data = given_data)[[1]]
+        make_prediction(bagged_mars, new_data = given_data)
     })
 }
 
@@ -163,9 +163,13 @@ function(pt) {
     pt <- jsonlite::fromJSON(pt) %>%
           sf::st_as_sf(coords = c("lng", "lat"), crs = 4326)
 
-    ts <- sf::st_filter(fire_ts, pt) %>%
+    timeseries_data <- readRDS(fire_ts)
+
+    ts <- sf::st_filter(timeseries_data, pt) %>%
           sf::st_drop_geometry() %>%
           dplyr::rename(year = year_, state = state_name)
+
+    rm(timeseries_data)
 
     ts$acres <- round(ts$acres)
 
