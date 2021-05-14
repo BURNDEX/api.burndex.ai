@@ -3,6 +3,8 @@ library(tidymodels)
 library(timetk)
 library(earth)
 library(R6)
+library(AOI)
+library(climateR)
 
 
 pr("app/plumber.R") %>%

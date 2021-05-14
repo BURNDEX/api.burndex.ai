@@ -1,5 +1,3 @@
-fire_path <- sf::read_sf("https://opendata.arcgis.com/datasets/f72ebe741e3b4f0db376b4e765728339_0.geojson")
-
 #' @title Download MARS Model from Google Cloud Storage
 #' @description
 #' Locates the model .qs file and downloads if it doesn't exist,
@@ -24,43 +22,10 @@ get_mars_model <- function() {
     qs::qread(file_path, nthreads = as.integer(parallel::detectCores()[1] - 1))
 }
 
-get_conus <- function() {
-    dplyr::filter(
-        USAboundaries::us_states(),
-        !name %in% c("Hawaii", "Puerto Rico", "Alaska")
-    ) %>%
-        sf::st_as_sf() %>%
-        sf::st_transform(5070)
-}
-
-get_north_america <- function() {
-    rnaturalearth::ne_countries() %>%
-        sf::st_as_sf() %>%
-        dplyr::filter(continent == "North America") %>%
-        sf::st_transform(
-            paste(
-                "+proj=aea",
-                "+lat_1=20", "+lat_2=60",
-                "+lat_0=40", "+lon_0=-96",
-                "+x_0=0", "+y_0=0",
-                "+ellps=GRS80",
-                "+datum=NAD83",
-                "+units=m",
-                "+no_defs"
-            )
-        )
-}
-
-get_sb <- function() {
-    AOI::aoi_get(county = "Santa Barbara", state = "CA")
-}
-
-get_global <- function() {
-    rnaturalearth::ne_countries() %>%
-        sf::st_as_sf() %>%
-        sf::st_transform("+proj=robin")
-}
-
+#' @title Calculate Chandler Burning Index
+#' @param rh Relative Humidity
+#' @param t Air Temperature
+#' @return Chandler Burning Index
 chandler_bi <- function(rh, t) {
     rh_eq  <- (110 - 1.373 * rh)
     t_eq   <- (10.20 - t)
@@ -70,8 +35,16 @@ chandler_bi <- function(rh, t) {
     main / 60
 }
 
-kelvin_to_fahrenheit <- function(t) ((t - 273.15) * (9 / 5) + 32)
+#' @title Convert Kelvin to Fahrenheit
+#' @param t Temperature
+#' @return Temperature in Fahrenheit
+kelvin_to_fahrenheit <- function(t) {
+    (t - 273.15) * (9 / 5) + 32
+}
 
+#' @title Tidy a `RasterLayer` into a `tibble`
+#' @param raster `RasterLayer` object
+#' @return A `tibble`
 tidy_raster <- function(raster) {
     rtable <- raster %>%
               raster::rasterToPoints() %>%
@@ -93,6 +66,11 @@ tidy_raster <- function(raster) {
     rtable
 }
 
+#' @title Tidy a `RasterStack` into a `tibble`
+#' @param raster_list `RasterStack` object
+#' @param as_sf If TRUE, a `sf` object is returned.
+#'              Otherwise, a regular `tibble` is returned.
+#' @return A `tibble` or `sf` object.
 tidy_stack <- function(raster_list, as_sf = FALSE) {
     param_names <- names(raster_list)
     tidy_stacks <- lapply(X = raster_list, FUN = tidy_raster)
@@ -121,6 +99,8 @@ tidy_stack <- function(raster_list, as_sf = FALSE) {
     tidy_data
 }
 
+#' @title Get common parameters between GridMET and MACA datasets.
+#' @return Common parameter names
 common_params <- function() {
     grid   <- climateR::param_meta$gridmet$common.name
     maca   <- climateR::param_meta$maca$common.name
@@ -129,6 +109,13 @@ common_params <- function() {
     grid[common]
 }
 
+#' @title Aggregate GridMET data by AOI and dates
+#' @param aoi Area of Interest
+#' @param start_date Starting date to index
+#' @param end_date Ending date to index
+#' @param as_sf If TRUE, a `sf` object is returned.
+#'              Otherwise, a regular `tibble` is returned
+#' @return A `tibble` or `sf` object
 aggregate_gridmet <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
     p <- progressr::progressor(steps = 3L)
 
@@ -183,6 +170,13 @@ aggregate_gridmet <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
     tidy_clim
 }
 
+#' @title Aggregate MACA data by AOI and dates
+#' @param aoi Area of Interest
+#' @param start_date Starting date to index
+#' @param end_date Ending date to index
+#' @param as_sf If TRUE, a `sf` object is returned.
+#'              Otherwise, a regular `tibble` is returned
+#' @return A `tibble` or `sf` object
 aggregate_maca <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
     p <- progressr::progressor(steps = 3L)
 
@@ -247,6 +241,15 @@ aggregate_maca <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
     tidy_clim
 }
 
+#' @title Convert a tidy `tibble` to a `RasterLayer`
+#' @param data `tibble`
+#' @param x Column in `data` representing the X dimension
+#' @param y Column in `data` representing the Y dimension
+#' @param z Column in `data` representing the Z dimension
+#' @param ... Unused
+#' @param res Resolution of `RasterLayer`.
+#'            If not used, infers resolution based on coordinates.
+#' @return A `RasterLayer` object
 tidy_to_raster <- function(data, x, y, z, ..., res = c(NA, NA)) {
     xyz <- data %>%
            dplyr::select({{ x }}, {{ y }}, {{ z }}) %>%
@@ -261,10 +264,4 @@ tidy_to_raster <- function(data, x, y, z, ..., res = c(NA, NA)) {
         res = res,
         crs = sf::st_crs(4326)$proj4string
     )
-}
-
-datename_to_col <- function(string) {
-    stringr::str_replace_all(string, "[.]", "-") %>%
-        stringr::str_remove("X") %>%
-        lubridate::ymd()
 }

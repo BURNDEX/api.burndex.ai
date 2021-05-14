@@ -2,8 +2,8 @@ source("R/utils.R", local = TRUE)
 source("R/globals.R", local = TRUE)
 
 #* Predict burning index from parameters for a point
-#* @param lat:[number] Latitude of point
-#* @param lon:[number] Longitude of point
+#* @param lat:[string] Latitude of point
+#* @param lon:[string] Longitude of point
 #* @param date:[string] Date (YYYY-MM-DD)
 #* @param prcp:[number] Precipitation Accumulation
 #* @param rhmax:[number] Maximum Relative Humidity
@@ -31,8 +31,8 @@ function(lat, lon, date, prcp, rhmax, rhmin, shum, srad, tmin, tmax) {
 }
 
 #* Predict burning index by a point of interest and date
-#* @param lat:[number] Latitude of point
-#* @param lon:[number] Longitude of point
+#* @param lat:[string] Latitude of point
+#* @param lon:[string] Longitude of point
 #* @param date:[string] Date (YYYY-MM-DD)
 #* @post /predict-date
 function(lat, lon, date) {
@@ -50,6 +50,35 @@ function(lat, lon, date) {
         given_data <- aggregate_maca(poi, start_date = date, end_date = date)
     } else {
         given_data <- aggregate_gridmet(poi, start_date = date, end_date = date)
+    }
+
+    bagged_mars$predict(new_data = given_data)[[1]]
+}
+
+#* Predict burning index by an area of interest and date
+#* @param xmin:[string] Minimum Longitude
+#* @param xmax:[string] Maximum Longitude
+#* @param ymin:[string] Minimum Latitude
+#* @param ymax:[string] Maximum Latitude
+#* @param date:[string] Date (YYYY-MM-DD)
+function(xmin, xmax, ymin, ymax, date) {
+    date <- as.Date(date)
+    xmin <- as.double(xmin)
+    xmax <- as.double(xmax)
+    ymin <- as.double(ymin)
+    ymax <- as.double(ymax)
+
+    assertthat::assert_that(date < "2100-01-01")
+
+    aoi <- expand.grid(c(xmin, xmax),
+                       c(ymin, ymax)) %>%
+           sf::st_as_sf(coords = c(1, 2)) %>%
+           sf::st_bbox()
+
+    if (date > Sys.Date() - 1) {
+        given_data <- aggregate_maca(aoi, start_date = date, end_date = date)
+    } else {
+        given_data <- aggregate_gridmet(aoi, start_date = date, end_date = date)
     }
 
     bagged_mars$predict(new_data = given_data)[[1]]
@@ -110,8 +139,14 @@ function(pt, start, end) {
   cbi
 }
 
+#* Get fire perimeters near a POI
+#* @param lat:[string] Latitude of point
+#* @param lon:[string] Longitude of point
 #* @post /fires
-function(pt) {
-  perimeters <- get_fires(grab_aoi(pt), fire_path) %>% geojsonsf::sf_geojson()
-  perimeters
+function(lat, lon) {
+    sf::st_point(x = c(lon, lat)) %>%
+        sf::st_set_crs(4326) %>%
+        AOI::aoi_buffer(10, km = TRUE) %>%
+        get_fires(fire_path) %>%
+        geojsonsf::sf_geojson()
 }
