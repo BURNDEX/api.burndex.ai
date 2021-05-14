@@ -9,7 +9,7 @@ get_mars_model <- function() {
         "mars_ensemble.qs"
     )
 
-    file_path <- file.path("data", "mars_ensemble.qs")
+    file_path <- file.path("/app/burndex_api/data", "mars_ensemble.qs")
 
     if (!file.exists(file_path)) {
         download.file(
