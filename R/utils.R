@@ -29,8 +29,14 @@ get_mars_model <- function() {
     qs::qread(file_path, nthreads = as.integer(parallel::detectCores()[1] - 1))
 }
 
-get_fire_data <- function() {
-    "/app/burndex_api/data/fire_perim.gpkg"
+get_fire_data <- function(type = c("perim", "ts")) {
+    type <- match.arg(type)
+
+    switch(
+        type,
+        "perim" = "/app/burndex_api/data/fire_perim.gpkg",
+        "ts"    = "/app/burndex_api/data/fire_timeseries.rds"
+    )
 }
 
 #' @title Convert latlon coordinates to an `sf` object
@@ -290,14 +296,8 @@ tidy_to_raster <- function(data, x, y, z, ..., res = c(NA, NA)) {
 }
 
 get_fires <- function(aoi, path) {
-  fire <- sf::st_read(path) %>%
-    sf::st_transform(4326) %>%
-    sf::st_filter(aoi) %>%
-    #> st_union() %>%
-    sf::st_transform(5070) %>%
-    #> sf::st_simplify(dTolerance = 100) %>%
-    rmapshaper::ms_simplify(keep = 0.01) %>%
-    #> sf::st_as_sfc() %>%
-    #> sf::st_as_sf() %>%
-    sf::st_transform(4326)
+    sf::st_read(path) %>%
+        sf::st_transform(5070) %>%
+        sf::st_filter(sf::st_transform(aoi, 5070)) %>%
+        sf::st_transform(4326)
 }

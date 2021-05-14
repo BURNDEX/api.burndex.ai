@@ -12,7 +12,10 @@ RUN apt-get update -qq && \
 # Get Machine Learning Model
 RUN wget -O /app/burndex_api/data/mars_ensemble.qs https://storage.googleapis.com/burndex-models/mars_ensemble.qs
 
-# Get Fire Perimeter Data and clean
+# Get Fire Perimeter Data
 RUN wget -O /app/burndex_api/data/fire_perim.gpkg https://storage.googleapis.com/burndex-models/fire_perim.gpkg
+
+# Get Fire Timeseries Data
+RUN wget -O /app/burndex_api/data/fire_timeseries.rds https://storage.googleapis.com/burndex-models/fire_timeseries_data.rds
 
 CMD ["Rscript", "/app/burndex_api/R/api.R"]
