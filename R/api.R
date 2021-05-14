@@ -28,4 +28,4 @@ pr("/app/burndex_api/R/plumber.R") %>%
 
     spec
   }) %>%
-  pr_run(host = "0.0.0.0", port = 8338)
+  pr_run(host = "0.0.0.0", port = strtoi(Sys.getenv("PORT")))

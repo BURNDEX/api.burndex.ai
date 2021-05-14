@@ -1,0 +1,30 @@
+steps:
+  # build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/burndex/bx-api:$COMMIT_SHA', '.']
+    id: Build
+    # push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/burndex/bx-api']
+    id: Push
+    # Deploy container image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run',
+        'deploy',
+        'bx-api',
+        '--image',
+        'gcr.io/burndex/bx-api',
+        '--region',
+        'us-west1',
+        '--platform',
+        'managed',
+        '--quiet',
+      ]
+    id: Deploy
+timeout: 1800s
+images:
+  - gcr.io/burndex/bx-api
+substitutions:
+  PORT: "8080"

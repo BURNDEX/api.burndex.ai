@@ -1,5 +1,4 @@
 FROM rocker/r-ver:4.0.4
-LABEL maintainer="justin@justinsingh.me"
 
 # Install Tidyverse
 RUN /rocker_scripts/install_tidyverse.sh
@@ -27,18 +26,15 @@ RUN install2.r -e -s \
     earth \
     R6 \
     qs \
-    jsonlite
+    jsonlite \
+    geojsonsf
 
 RUN installGithub.r \
     ropensci/USAboundaries \
     ropensci/USAboundariesData \
     mikejohnson51/AOI \
-    mikejohnson51/climateR
-
-# Install plumber and setup image to use
-RUN Rscript -e "remotes::install_github('rstudio/plumber@master')"
-EXPOSE 8338
-ENTRYPOINT ["R", "-e", "pr <- plumber::plumb(rev(commandArgs())[1]); args <- list(host = '0.0.0.0', port = 8338); if (packageVersion('plumber') >= '1.0.0') { pr$setDocs(TRUE) } else { args$swagger <- TRUE }; do.call(pr$run, args)"]
+    mikejohnson51/climateR \
+    rstudio/plumber
 
 COPY . /app/burndex_api
 CMD ["/app/burndex_api/R/api.R"]
