@@ -38,7 +38,7 @@ RUN installGithub.r \
 # Install plumber and setup image to use
 RUN Rscript -e "remotes::install_github('rstudio/plumber@master')"
 EXPOSE 8338
-ENTRYPOINT ["R", "-e", "pr <- plumber::plumb(rev(commandArgs())[1]); args <- list(host = '0.0.0.0', port = 8000); if (packageVersion('plumber') >= '1.0.0') { pr$setDocs(TRUE) } else { args$swagger <- TRUE }; do.call(pr$run, args)"]
+ENTRYPOINT ["R", "-e", "pr <- plumber::plumb(rev(commandArgs())[1]); args <- list(host = '0.0.0.0', port = 8338); if (packageVersion('plumber') >= '1.0.0') { pr$setDocs(TRUE) } else { args$swagger <- TRUE }; do.call(pr$run, args)"]
 
 COPY . /app/burndex_api
-CMD ["/app/burndex_api/R/plumber.R"]
+CMD ["/app/burndex_api/R/api.R"]
