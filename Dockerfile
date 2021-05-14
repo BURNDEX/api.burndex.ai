@@ -29,7 +29,8 @@ RUN install2.r -e -s \
     jsonlite \
     geojsonsf \
     promises \
-    future
+    future \
+    rmapshaper
 
 RUN installGithub.r \
     ropensci/USAboundaries \
