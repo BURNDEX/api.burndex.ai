@@ -137,7 +137,7 @@ function(county, state, date) {
     })
 }
 
-#* @param pt: [object]
+#* @param pt:object
 #* @post /aoi
 function(pt) {
   pt <- pt %>%
