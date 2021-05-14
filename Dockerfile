@@ -30,7 +30,9 @@ RUN install2.r -e -s \
     geojsonsf \
     promises \
     future \
-    rmapshaper
+    rmapshaper \
+    progressr \
+    foreach
 
 RUN installGithub.r \
     ropensci/USAboundaries \

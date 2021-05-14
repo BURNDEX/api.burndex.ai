@@ -4,6 +4,8 @@ library(earth)
 library(R6)
 library(AOI)
 library(climateR)
+library(sf)
+library(foreach)
 
 bagged_mars <- get_mars_model()
 

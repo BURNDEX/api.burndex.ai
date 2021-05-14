@@ -284,16 +284,16 @@ tidy_to_raster <- function(data, x, y, z, ..., res = c(NA, NA)) {
         crs = sf::st_crs(4326)$proj4string
     )
 }
-
+httr::content()
 get_fires <- function(aoi, path) {
-  fire <- st_read(path) %>%
-    st_transform(4326) %>%
-    st_filter(aoi) %>%
+  fire <- sf::st_read(path) %>%
+    sf::st_transform(4326) %>%
+    sf::st_filter(aoi) %>%
     #> st_union() %>%
-    st_transform(5070) %>%
+    sf::st_transform(5070) %>%
     #> sf::st_simplify(dTolerance = 100) %>%
     rmapshaper::ms_simplify(keep = 0.01) %>%
     #> sf::st_as_sfc() %>%
     #> sf::st_as_sf() %>%
-    st_transform(4326)
+    sf::st_transform(4326)
 }
