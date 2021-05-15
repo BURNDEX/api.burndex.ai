@@ -82,8 +82,8 @@ function(xmin, xmax, ymin, ymax, date) {
 
     assertthat::assert_that(date < "2100-01-01")
 
-    aoi2 <- expand.grid(c(bb$xmin, bb$xmax),
-                       c(bb$ymin, bb$ymax)) %>%
+    aoi <- expand.grid(c(xmin, xmax),
+                       c(ymin, ymax)) %>%
             sf::st_as_sf(coords = c(1, 2)) %>%
             sf::st_set_crs(4326) %>%
             sf::st_bbox() %>%
