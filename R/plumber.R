@@ -62,7 +62,9 @@ function(lat, lon, date) {
             )
         }
 
-        make_prediction(bagged_mars, new_data = given_data)
+        jsonlite::toJSON(
+            make_augmentation(bagged_mars, new_data = given_data)
+        )
     })
 }
 
@@ -84,11 +86,11 @@ function(xmin, xmax, ymin, ymax, date) {
 
     aoi <- expand.grid(c(xmin, xmax),
                        c(ymin, ymax)) %>%
-            sf::st_as_sf(coords = c(1, 2)) %>%
-            sf::st_set_crs(4326) %>%
-            sf::st_bbox() %>%
-            sf::st_as_sfc() %>%
-            sf::st_as_sf()
+           sf::st_as_sf(coords = c(1, 2)) %>%
+           sf::st_set_crs(4326) %>%
+           sf::st_bbox() %>%
+           sf::st_as_sfc() %>%
+           sf::st_as_sf()
 
     promises::future_promise({
         if (date > Sys.Date() - 1) {
@@ -105,7 +107,9 @@ function(xmin, xmax, ymin, ymax, date) {
             )
         }
 
-        make_prediction(bagged_mars, new_data = given_data)
+        jsonlite::toJSON(
+            make_augmentation(bagged_mars, new_data = given_data)
+        )
     })
 }
 
@@ -138,7 +142,9 @@ function(county, state, date) {
             )
         }
 
-        make_prediction(bagged_mars, new_data = given_data)
+        jsonlite::toJSON(
+            make_augmentation(bagged_mars, new_data = given_data)
+        )
     })
 }
 
