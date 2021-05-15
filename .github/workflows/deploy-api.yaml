@@ -67,11 +67,11 @@ jobs:
           passphrase: ${{ secrets.DO_PASSPHRASE }}
           envs: AWS_ACCESS, AWS_SECRET, AWS_REGION, AWS_REGISTRY, IMAGE
           script: |
-            # Stop current container
-            docker stop $IMAGE
-
-            # Remove container
-            docker rm $IMAGE
+            # Stop current container if it's running
+            docker ps -aq --filter "name=${IMAGE}" | \
+            grep -q . && \
+            docker stop ${IMAGE} && \
+            docker rm -fv ${IMAGE}
 
             # Pull new image
             docker pull $AWS_REGISTRY/$IMAGE:latest

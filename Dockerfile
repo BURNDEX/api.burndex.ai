@@ -20,4 +20,4 @@ RUN wget -O /app/burndex_api/data/fire_timeseries.rds https://burndex-data.s3-us
 
 ENV PORT=15782
 EXPOSE 15782
-CMD service nginx start && Rscript /app/burndex_api/R/api.R
+CMD Rscript /app/burndex_api/R/api.R
