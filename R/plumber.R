@@ -71,6 +71,7 @@ function(lat, lon, date) {
 #* @param ymin:string Minimum Latitude
 #* @param ymax:string Maximum Latitude
 #* @param date:string Date (YYYY-MM-DD)
+#* @post /predict-aoi
 function(xmin, xmax, ymin, ymax, date) {
     date <- as.Date(date)
     xmin <- as.double(xmin)
@@ -83,7 +84,9 @@ function(xmin, xmax, ymin, ymax, date) {
     aoi <- expand.grid(c(xmin, xmax),
                        c(ymin, ymax)) %>%
            sf::st_as_sf(coords = c(1, 2)) %>%
-           sf::st_bbox()
+           sf::st_bbox() %>%
+           sf::st_as_sfc() %>%
+           sf::st_as_sf()
 
     promises::future_promise({
         if (date > Sys.Date() - 1) {
