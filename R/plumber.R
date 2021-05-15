@@ -44,7 +44,8 @@ function(lat, lon, date) {
 
     assertthat::assert_that(date < "2100-01-01")
 
-    poi <- make_point(lat, lon)
+    poi <- make_point(lat, lon) %>%
+           AOI::aoi_buffer(20, km = TRUE)
 
     promises::future_promise({
         if (date > Sys.Date() - 1) {
@@ -81,12 +82,13 @@ function(xmin, xmax, ymin, ymax, date) {
 
     assertthat::assert_that(date < "2100-01-01")
 
-    aoi <- expand.grid(c(xmin, xmax),
-                       c(ymin, ymax)) %>%
-           sf::st_as_sf(coords = c(1, 2)) %>%
-           sf::st_bbox() %>%
-           sf::st_as_sfc() %>%
-           sf::st_as_sf()
+    aoi2 <- expand.grid(c(bb$xmin, bb$xmax),
+                       c(bb$ymin, bb$ymax)) %>%
+            sf::st_as_sf(coords = c(1, 2)) %>%
+            sf::st_set_crs(4326) %>%
+            sf::st_bbox() %>%
+            sf::st_as_sfc() %>%
+            sf::st_as_sf()
 
     promises::future_promise({
         if (date > Sys.Date() - 1) {
