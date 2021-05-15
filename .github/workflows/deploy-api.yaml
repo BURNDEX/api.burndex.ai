@@ -59,20 +59,20 @@ jobs:
           envs: AWS_ACCESS, AWS_SECRET, AWS_REGION, AWS_REGISTRY, IMAGE
           script: |
             # Logon to AWS ECR
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY
+            aws ecr get-login-password --region $(echo $AWS_REGION) | docker login --username AWS --password-stdin $(echo $AWS_REGISTRY)
 
             # Stop current container
-            docker stop $IMAGE
+            docker stop $(echo $IMAGE)
 
             # Remove container
-            docker rm $IMAGE
+            docker rm $(echo $IMAGE)
 
             # Pull new image
-            docker pull $AWS_REGISTRY/$IMAGE:latest
+            docker pull $(echo $AWS_REGISTRY)/$(echo $IMAGE):latest
 
             # Run new container
             docker run -d \
             --restart always \
-            -p 15782:15782
-            --name $IMAGE
-            $AWS_REGISTRY/$IMAGE:latest
+            -p 15782:15782 \
+            --name $IMAGE \
+            $(echo $AWS_REGISTRY)/$(echo $IMAGE):latest
