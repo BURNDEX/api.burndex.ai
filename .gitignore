@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 data/
+Dockerrun.aws.json
+.httr-oauth

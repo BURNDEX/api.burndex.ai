@@ -18,6 +18,6 @@ RUN wget -O /app/burndex_api/data/fire_perim.gpkg https://burndex-data.s3-us-wes
 # Get Fire Timeseries Data
 RUN wget -O /app/burndex_api/data/fire_timeseries.rds https://burndex-data.s3-us-west-1.amazonaws.com/fire_timeseries_data.rds
 
-EXPOSE 8080
-
-CMD ["Rscript", "/app/burndex_api/R/api.R"]
+ENV PORT=15782
+EXPOSE 15782
+CMD service nginx start && Rscript /app/burndex_api/R/api.R
