@@ -229,7 +229,7 @@ aggregate_maca <- function(aoi, start_date, end_date = NULL, as_sf = FALSE) {
 
     other_climate <- climateR::getMACA(
         AOI       = aoi,
-        param     = common_params()[common_params() %in% c("rhmax", "rhmin")],
+        param     = common_params()[!common_params() %in% c("rhmax", "rhmin")],
         startDate = start_date,
         endDate   = end_date
     )
