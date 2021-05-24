@@ -67,7 +67,7 @@ jobs:
           passphrase: ${{ secrets.DO_PASSPHRASE }}
           envs: AWS_ACCESS, AWS_SECRET, AWS_REGION, AWS_REGISTRY, IMAGE
           script: |
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "${AWS_REGISTRY}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY
             # Stop current container if it's running
             docker ps -aq --filter "name=${IMAGE}" | \
             grep -q . && \
