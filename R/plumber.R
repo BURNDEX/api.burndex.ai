@@ -149,18 +149,18 @@ function(county, state, date) {
 }
 
 #* Get fire perimeters near a POI
-#* @param pt:object Point dataframe
+#* @param lat:string Latitude of point
+#* @param lon:string Longitude of point
 #* @post /fires
-function(pt) {
-    #> lat <- as.double(lat)
-    #> lon <- as.double(lon)
+function(lat, lon) {
+    lat <- as.double(lat)
+    lon <- as.double(lon)
 
-    pt <- jsonlite::fromJSON(pt) %>%
-          sf::st_as_sf(coords = c("lng", "lat"), crs = 4326)
+    #> pt <- jsonlite::fromJSON(pt) %>%
+    #>       sf::st_as_sf(coords = c("lng", "lat"), crs = 4326)
 
     promises::future_promise({
-        # make_point(lat, lon) %>%
-        pt %>%
+        make_point(lat, lon) %>%
             AOI::aoi_buffer(10, km = TRUE) %>%
             get_fires(fire_perim) %>%
             geojsonsf::sf_geojson()
@@ -168,21 +168,25 @@ function(pt) {
 }
 
 #* Get fire timeseries data
-#* @param pt:object
+#* @param lat:string Latitude of point
+#* @param lon:string Longitude of point
 #* @post /fires_timeseries
-function(pt) {
-    pt <- jsonlite::fromJSON(pt) %>%
-          sf::st_as_sf(coords = c("lng", "lat"), crs = 4326)
+function(lat, lon) {
+    #> pt <- jsonlite::fromJSON(pt) %>%
+    #>       sf::st_as_sf(coords = c("lng", "lat"), crs = 4326)
+    pt <- make_point(lat, lon)
 
-    timeseries_data <- readRDS(fire_ts)
+    promises::future_promise({
+        timeseries_data <- readRDS(fire_ts)
 
-    ts <- sf::st_filter(timeseries_data, pt) %>%
-          sf::st_drop_geometry() %>%
-          dplyr::rename(year = year_, state = state_name)
+        ts <- sf::st_filter(timeseries_data, pt) %>%
+              sf::st_drop_geometry() %>%
+              dplyr::rename(year = year_, state = state_name)
 
-    rm(timeseries_data)
+        rm(timeseries_data)
 
-    ts$acres <- round(ts$acres)
+        ts$acres <- round(ts$acres)
 
-    jsonlite::toJSON(ts)
+        jsonlite::toJSON(ts)
+    })
 }
